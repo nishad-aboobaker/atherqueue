@@ -12,19 +12,22 @@ import {
   stopMonitoring,
   processQueueNotifications
 } from '../workers/stationMonitor.js'
+import authMiddleware from '../middleware/auth.js'
 
 const router = express.Router()
 
-router.post('/join', async (req, res) => {
+router.post('/join', authMiddleware, async (req, res) => {
   try {
-    const { stationId, stationName, email } = req.body
+    const { stationId, stationName } = req.body
+    const email = req.user.email
+    const userId = req.user.id
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
-    if (!stationId || !stationName || !email) {
-      return res.status(400).json({ message: 'stationId, stationName and email are required' })
+    if (!stationId || !stationName) {
+      return res.status(400).json({ message: 'stationId and stationName are required' })
     }
 
-    const entry = await createQueueEntry(stationId, stationName, email, ipAddress)
+    const entry = await createQueueEntry(stationId, stationName, email, ipAddress, userId)
     
     // Retrieve the dynamically calculated rank
     const currentPosition = await getDynamicPosition(entry)
@@ -46,10 +49,16 @@ router.post('/join', async (req, res) => {
   }
 })
 
-router.get('/:queueId', async (req, res) => {
+router.get('/:queueId', authMiddleware, async (req, res) => {
   try {
     const entry = await Queue.findById(req.params.queueId)
     if (!entry) return res.status(404).json({ message: 'Queue entry not found' })
+
+    // Security check: Verify user owns the queue entry by either userId reference or email match
+    const isOwner = (entry.userId && entry.userId.toString() === req.user.id) || (entry.email === req.user.email)
+    if (!isOwner) {
+      return res.status(403).json({ message: 'Unauthorized access to queue entry' })
+    }
 
     const currentPosition = await getDynamicPosition(entry)
 
@@ -69,6 +78,8 @@ router.get('/:queueId', async (req, res) => {
 
 router.post('/claim/:token', async (req, res) => {
   try {
+    // Note: Claims from email links are left public for direct mobile convenience, 
+    // but the token itself serves as the cryptographic security mechanism.
     const entry = await claimSpot(req.params.token)
 
     // Notify the next person in line immediately if other spots are available
@@ -83,10 +94,16 @@ router.post('/claim/:token', async (req, res) => {
   }
 })
 
-router.delete('/:queueId', async (req, res) => {
+router.delete('/:queueId', authMiddleware, async (req, res) => {
   try {
     const entry = await Queue.findById(req.params.queueId)
     if (!entry) return res.status(404).json({ message: 'Queue entry not found' })
+
+    // Security check: Verify ownership
+    const isOwner = (entry.userId && entry.userId.toString() === req.user.id) || (entry.email === req.user.email)
+    if (!isOwner) {
+      return res.status(403).json({ message: 'Unauthorized access to queue entry' })
+    }
 
     const wasNotified = entry.status === 'notified'
     await removeFromQueue(req.params.queueId)
@@ -110,6 +127,7 @@ router.delete('/:queueId', async (req, res) => {
 
 router.get('/skip/:token', async (req, res) => {
   try {
+    // Note: Skipped links are also public from emails.
     const entry = await Queue.findOne({ claimToken: req.params.token })
     if (!entry) return res.status(404).json({ message: 'Invalid token' })
     

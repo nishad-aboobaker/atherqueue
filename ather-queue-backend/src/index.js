@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import stationsRouter from './routes/stations.js'
 import queueRouter from './routes/queue.js'
+import authRouter from './routes/auth.js'
 import { recoverActiveQueues } from './workers/stationMonitor.js'
 import { joinQueueLimiter } from './middleware/rateLimiter.js'
 
@@ -14,6 +15,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+app.use('/api/auth', authRouter)
 app.use('/api/stations', stationsRouter)
 app.use('/api/queue/join', joinQueueLimiter)
 app.use('/api/queue', queueRouter)

@@ -27,7 +27,7 @@ export async function getNextInQueue(stationId) {
   }).sort({ joinedAt: 1 })
 }
 
-export async function createQueueEntry(stationId, stationName, email, ipAddress) {
+export async function createQueueEntry(stationId, stationName, email, ipAddress, userId = null) {
   const existing = await Queue.findOne({
     stationId,
     email,
@@ -42,7 +42,7 @@ export async function createQueueEntry(stationId, stationName, email, ipAddress)
   })
   if (ipExists) throw new Error('Too many requests from your location')
 
-  const entry = await Queue.create({ stationId, stationName, email, ipAddress })
+  const entry = await Queue.create({ stationId, stationName, email, ipAddress, userId })
   return entry
 }
 

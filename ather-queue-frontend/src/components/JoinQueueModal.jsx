@@ -3,23 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
 export default function JoinQueueModal({ station, onClose }) {
-  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
+  const email = localStorage.getItem('userEmail') || 'your registered account'
 
   async function handleJoin() {
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address')
-      return
-    }
     setLoading(true)
     setError(null)
     try {
       const res = await api.post('/queue/join', {
         stationId: station.id,
-        stationName: station.displayName,
-        email: email
+        stationName: station.displayName
       })
       navigate('/queue/' + res.data.queueId)
     } catch (err) {
@@ -30,7 +25,7 @@ export default function JoinQueueModal({ station, onClose }) {
 
   return (
     <div className='fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in'>
-      <div className='bg-slate-900 border border-slate-800/80 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-scale-up'>
+      <div className='bg-slate-900 border border-slate-800/80 rounded-3xl p-6 w-full max-w-sm shadow-2xl relative animate-scale-up'>
         
         {/* Decorative electric glow */}
         <div className='absolute -top-10 left-1/2 -translate-x-1/2 w-40 h-20 bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none' />
@@ -39,26 +34,17 @@ export default function JoinQueueModal({ station, onClose }) {
           <div className='w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3 shadow-[0_4px_12px_rgba(16,185,129,0.15)]'>
             ⚡
           </div>
-          <h2 className='text-white text-xl font-extrabold tracking-tight'>Queue Reservation</h2>
+          <h2 className='text-white text-xl font-extrabold tracking-tight'>Confirm Spot</h2>
           <p className='text-slate-400 text-xs mt-1 leading-relaxed max-w-xs mx-auto'>
             You are joining the waitlist for <span className='text-slate-200 font-semibold'>{station.displayName}</span>
           </p>
         </div>
 
         <div className='space-y-4'>
-          <div>
-            <label htmlFor='email' className='text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2 block'>
-              Email Address
-            </label>
-            <input
-              id='email'
-              type='email'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder='name@domain.com'
-              className='w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 rounded-xl px-4 py-3.5 text-white placeholder-slate-600 outline-none transition-all duration-200 text-sm font-medium'
-              required
-            />
+          {/* Automatic User Email Display Card */}
+          <div className='bg-slate-950 border border-slate-850 rounded-2xl p-4 text-center shadow-inner'>
+            <p className='text-slate-500 text-[9px] font-bold uppercase tracking-wider mb-1'>Reserving waitlist as</p>
+            <p className='text-white text-sm font-bold truncate max-w-[220px] mx-auto'>{email}</p>
           </div>
 
           {error && (
