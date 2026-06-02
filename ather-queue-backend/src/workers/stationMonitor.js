@@ -26,14 +26,14 @@ export async function processQueueNotifications(stationId, stationName) {
     // Resilient fallback: If live availableCount is null/unsupported, default to 1 so the queue doesn't lock up
     const effectiveAvailable = (availableCount !== null && availableCount !== undefined) ? availableCount : 1
 
-    // 3. Count currently notified users
-    const notifiedCount = await QueueModel.countDocuments({
+    // 3. Count active utilization (currently notified or actively charging/claimed)
+    const activeUtilization = await QueueModel.countDocuments({
       stationId,
-      status: 'notified'
+      status: { $in: ['notified', 'claimed'] }
     })
 
     // 4. Calculate how many spots are vacant
-    const spotsToNotify = Math.max(0, effectiveAvailable - notifiedCount)
+    const spotsToNotify = Math.max(0, effectiveAvailable - activeUtilization)
 
     if (spotsToNotify > 0) {
       for (let i = 0; i < spotsToNotify; i++) {

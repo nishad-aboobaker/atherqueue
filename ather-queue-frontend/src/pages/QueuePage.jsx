@@ -148,6 +148,27 @@ export default function QueuePage() {
               </p>
             </div>
           </div>
+        ) : isClaimed ? (
+          /* ACTIVELY CHARGING STATE */
+          <div className='space-y-6 text-center animate-fade-in'>
+            {/* Glowing animated charging circle */}
+            <div className='w-40 h-40 bg-emerald-500/10 border-4 border-emerald-500 rounded-full flex flex-col items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.25)] relative'>
+              <span className='text-emerald-500 text-4xl font-black mb-1 animate-pulse'>⚡</span>
+              <span className='text-xs font-bold text-slate-300 uppercase tracking-widest animate-pulse'>Charging</span>
+            </div>
+
+            <div className='bg-slate-950/80 border border-slate-800/60 rounded-2xl p-5 text-left space-y-3 shadow-inner'>
+              <h4 className='text-emerald-400 text-xs font-bold uppercase tracking-wider flex gap-1.5 items-center'>
+                <span>🔌</span> Active Session
+              </h4>
+              <p className='text-slate-300 text-xs leading-relaxed font-medium'>
+                Your EV is currently occupying the charging connector.
+              </p>
+              <p className='text-slate-400 text-[10px] leading-relaxed'>
+                When you finish charging your vehicle, click the button below to close the session and release the charger.
+              </p>
+            </div>
+          </div>
         ) : (
           /* WAITING STATE */
           <div className='space-y-8 animate-fade-in'>
@@ -201,12 +222,21 @@ export default function QueuePage() {
 
         {/* Footer Actions */}
         <div className='mt-8 pt-6 border-t border-slate-800/80'>
-          <button
-            onClick={leaveQueue}
-            className='w-full bg-slate-800/60 hover:bg-rose-500/10 hover:text-rose-400 border border-slate-700/60 hover:border-rose-500/30 text-slate-300 font-bold py-3.5 rounded-2xl transition-all duration-200 text-sm cursor-pointer'
-          >
-            Leave Queue
-          </button>
+          {isClaimed ? (
+            <button
+              onClick={leaveQueue}
+              className='w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3.5 rounded-2xl shadow-[0_4px_16px_rgba(16,185,129,0.2)] transition-all duration-200 text-sm cursor-pointer'
+            >
+              Finish Charging Session
+            </button>
+          ) : (
+            <button
+              onClick={leaveQueue}
+              className='w-full bg-slate-800/60 hover:bg-rose-500/10 hover:text-rose-400 border border-slate-700/60 hover:border-rose-500/30 text-slate-300 font-bold py-3.5 rounded-2xl transition-all duration-200 text-sm cursor-pointer'
+            >
+              Leave Queue
+            </button>
+          )}
         </div>
       </div>
     </div>
