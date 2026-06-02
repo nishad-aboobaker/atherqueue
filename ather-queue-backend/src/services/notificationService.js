@@ -1,8 +1,9 @@
 import transporter from '../config/mailer.js'
 
 export async function sendNotificationEmail(email, stationName, claimToken) {
-  const claimUrl = process.env.FRONTEND_URL + '/claim/' + claimToken
-  const skipUrl = process.env.FRONTEND_URL + '/skip/' + claimToken
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+  const claimUrl = frontendUrl + '/claim/' + claimToken
+  const skipUrl = frontendUrl + '/skip/' + claimToken
 
   await transporter.sendMail({
     from: '"Ather Queue" <' + process.env.SMTP_USER + '>',
