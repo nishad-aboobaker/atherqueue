@@ -1,0 +1,29 @@
+# Monorepo Root gitignore
+
+# Ignore dependency folders globally
+**/node_modules/
+
+# Ignore secret environment variables globally (Crucial!)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Ignore build and distribution outputs globally
+**/dist/
+**/build/
+**/out/
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+
+# Debug & system logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE settings
+.vscode/
+.idea/
